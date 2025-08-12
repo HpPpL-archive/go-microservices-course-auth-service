@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	tableName = "auth"
+	tableName = "users"
 
 	idColumn        = "id"
 	nameColumn      = "name"
@@ -62,7 +62,7 @@ func NewRepository(db *pgxpool.Pool) repository.AuthRepository {
 	return &repo{db: db}
 }
 
-func (r *repo) Create(ctx context.Context, info *model.UserDataInfo) (int64, error) {
+func (r *repo) Create(ctx context.Context, info *desc.UserDataInfo) (int64, error) {
 	log.Print("There is create request!")
 	if info.Password != info.PasswordConfirm {
 		log.Print("Passwords do not match!")
@@ -148,21 +148,21 @@ func (r *repo) Get(ctx context.Context, userId int64) (*model.User, error) {
 	return converter.ToAuthFromRepo(&user), nil
 }
 
-func (r *repo) Update(ctx context.Context, updateInfo *model.UpdateUser) (*emptypb.Empty, error) {
+func (r *repo) Update(ctx context.Context, updateInfo *desc.UpdateRequest) (*emptypb.Empty, error) {
 	log.Print("There is update request!")
 
-	userID := updateInfo.ID
+	userID := updateInfo.Id
 
 	builderUpdate := sq.Update(tableName).
 		PlaceholderFormat(sq.Dollar).
 		Where(sq.Eq{idColumn: userID})
 
-	nameWrapper := updateInfo.Name
+	nameWrapper := updateInfo.GetName()
 	if nameWrapper != nil {
 		builderUpdate = builderUpdate.Set(nameColumn, nameWrapper.GetValue())
 	}
 
-	emailWrapper := updateInfo.Email
+	emailWrapper := updateInfo.GetEmail()
 	if emailWrapper != nil {
 		builderUpdate = builderUpdate.Set(emailColumn, emailWrapper.GetValue())
 	}
