@@ -3,14 +3,21 @@ package converter
 import (
 	"github.com/HpPpL/microservices_course_auth/internal/model"
 	modelRepo "github.com/HpPpL/microservices_course_auth/internal/repository/auth/model"
+	desc "github.com/HpPpL/microservices_course_auth/pkg/auth_v1"
+	"time"
 )
 
-// Нам же вообще не важен этот метод, так как мы его не возврашаем
-func ToAuthFromRepo(user *modelRepo.User) *model.User {
-	//var UpdatedAt *timestamppb.Timestamp
-	//if user.UpdatedAt.Valid {
-	//	UpdatedAt = timestamppb.New(user.UpdatedAt.Time)
-	//}
+const (
+	roleUnspecified = "unspecified"
+	roleUser        = "user"
+	roleAdmin       = "admin"
+)
+
+func ToUserFromRepo(user *modelRepo.User) *model.User {
+	var UpdatedAt time.Time
+	if user.UpdatedAt.Valid {
+		UpdatedAt = user.UpdatedAt.Time
+	}
 
 	return &model.User{
 		ID:        user.ID,
@@ -18,8 +25,33 @@ func ToAuthFromRepo(user *modelRepo.User) *model.User {
 		Email:     user.Email,
 		Role:      user.Role,
 		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
-		//CreatedAt: timestamppb.New(user.CreatedAt),
-		//UpdatedAt: UpdatedAt,
+		UpdatedAt: UpdatedAt,
+	}
+}
+
+func ToUserInfoFromService(userInfo *model.UserDataInfo) *modelRepo.UserDataInfo {
+	var roleStr string
+	switch userInfo.Role {
+	case desc.Role_ROLE_UNSPECIFIED:
+		roleStr = roleUnspecified
+	case desc.Role_ROLE_USER:
+		roleStr = roleUser
+	case desc.Role_ROLE_ADMIN:
+		roleStr = roleAdmin
+	}
+	return &modelRepo.UserDataInfo{
+		Name:            userInfo.Name,
+		Email:           userInfo.Email,
+		Password:        userInfo.Password,
+		PasswordConfirm: userInfo.PasswordConfirm,
+		Role:            roleStr,
+	}
+}
+
+func ToUpdateUserFromService(userUpdate *model.UpdateUser) *modelRepo.UpdateUser {
+	return &modelRepo.UpdateUser{
+		ID:    userUpdate.ID,
+		Name:  userUpdate.Name,
+		Email: userUpdate.Email,
 	}
 }

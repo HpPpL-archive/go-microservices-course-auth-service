@@ -62,31 +62,17 @@ func NewRepository(db *pgxpool.Pool) repository.AuthRepository {
 	return &repo{db: db}
 }
 
-func (r *repo) Create(ctx context.Context, info *desc.UserDataInfo) (int64, error) {
+func (r *repo) Create(ctx context.Context, info *modelRepo.UserDataInfo) (int64, error) {
 	log.Print("There is create request!")
 	if info.Password != info.PasswordConfirm {
 		log.Print("Passwords do not match!")
 		return 0, errPasswordDoesntMatch
 	}
 
-	var roleStr string
-	switch info.Role {
-	case desc.Role_ROLE_UNSPECIFIED:
-		roleStr = roleUnspecified
-	case desc.Role_ROLE_USER:
-		roleStr = roleUser
-	case desc.Role_ROLE_ADMIN:
-		roleStr = roleAdmin
-	default:
-		log.Printf("invalid role value: %v", info.Role)
-		return 0, errInvalidRole
-	}
-
-	// Вынести имя таблицы можно попробовать потом
 	builderInsert := sq.Insert(tableName).
 		PlaceholderFormat(sq.Dollar).
 		Columns(nameColumn, emailColumn, roleColumn).
-		Values(info.Name, info.Email, roleStr).
+		Values(info.Name, info.Email, info.Role).
 		Suffix("RETURNING id")
 
 	query, args, err := builderInsert.ToSql()
@@ -95,15 +81,15 @@ func (r *repo) Create(ctx context.Context, info *desc.UserDataInfo) (int64, erro
 		return 0, errFailedBuildQuery
 	}
 
-	var UserID int64
-	err = r.db.QueryRow(ctx, query, args...).Scan(&UserID)
+	var userID int64
+	err = r.db.QueryRow(ctx, query, args...).Scan(&userID)
 	if err != nil {
 		log.Printf("failed to insert user: %v", err)
 		return 0, errFailedInsertUser
 	}
 
-	log.Printf("inserted user with id: %v", UserID)
-	return UserID, nil
+	log.Printf("inserted user with id: %v", userID)
+	return userID, nil
 }
 
 func (r *repo) Get(ctx context.Context, userId int64) (*model.User, error) {
@@ -145,29 +131,20 @@ func (r *repo) Get(ctx context.Context, userId int64) (*model.User, error) {
 	log.Printf("ID: %v, Name: %v, Email: %v, Role: %v, CreatedAt: %v, UpdatedAt: %v",
 		user.ID, user.Name, user.Email, user.Role, user.CreatedAt, user.UpdatedAt)
 
-	return converter.ToAuthFromRepo(&user), nil
+	return converter.ToUserFromRepo(&user), nil
 }
 
-func (r *repo) Update(ctx context.Context, updateInfo *desc.UpdateRequest) (*emptypb.Empty, error) {
+func (r *repo) Update(ctx context.Context, updateInfo *modelRepo.UpdateUser) (*emptypb.Empty, error) {
 	log.Print("There is update request!")
 
-	userID := updateInfo.Id
+	userID := updateInfo.ID
 
 	builderUpdate := sq.Update(tableName).
 		PlaceholderFormat(sq.Dollar).
-		Where(sq.Eq{idColumn: userID})
-
-	nameWrapper := updateInfo.GetName()
-	if nameWrapper != nil {
-		builderUpdate = builderUpdate.Set(nameColumn, nameWrapper.GetValue())
-	}
-
-	emailWrapper := updateInfo.GetEmail()
-	if emailWrapper != nil {
-		builderUpdate = builderUpdate.Set(emailColumn, emailWrapper.GetValue())
-	}
-
-	builderUpdate = builderUpdate.Set(updatedAtColumn, time.Now())
+		Where(sq.Eq{idColumn: userID}).
+		Set(nameColumn, updateInfo.Name).
+		Set(emailColumn, updateInfo.Email).
+		Set(updatedAtColumn, time.Now())
 
 	query, args, err := builderUpdate.ToSql()
 	if err != nil {

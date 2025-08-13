@@ -11,7 +11,7 @@ type UserDataInfo struct {
 	Email           string
 	Password        string
 	PasswordConfirm string
-	Role            desc.Role
+	Role            string
 }
 
 type User struct {
@@ -21,4 +21,10 @@ type User struct {
 	Role      desc.Role
 	CreatedAt time.Time
 	UpdatedAt sql.NullTime
+}
+
+type UpdateUser struct {
+	ID    int64
+	Name  string
+	Email string
 }
