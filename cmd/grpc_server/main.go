@@ -2,16 +2,14 @@ package main
 
 import (
 	"context"
-	"github.com/HpPpL/microservices_course_auth/internal/converter"
+	authAPI "github.com/HpPpL/microservices_course_auth/internal/api/auth"
 	repoAuth "github.com/HpPpL/microservices_course_auth/internal/repository/auth"
-	"github.com/HpPpL/microservices_course_auth/internal/service"
 	serviceAuth "github.com/HpPpL/microservices_course_auth/internal/service/auth"
 
 	"flag"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
-	"google.golang.org/protobuf/types/known/emptypb"
 	"log"
 	"net"
 
@@ -24,55 +22,6 @@ var configPath string
 
 func init() {
 	flag.StringVar(&configPath, "config-path", ".env", "path to config file")
-}
-
-// server implements the AuthV1 gRPC service by embedding UnimplementedAuthV1Server.
-type server struct {
-	desc.UnimplementedAuthV1Server
-	authService service.AuthService
-}
-
-// Create part
-func (s *server) Create(ctx context.Context, req *desc.CreateRequest) (*desc.CreateResponse, error) {
-	userID, err := s.authService.Create(ctx, converter.ToUserInfoFromDesc(req.Info))
-	if err != nil {
-		return nil, err
-	}
-
-	log.Printf("inserted user with id: %v", userID)
-	return &desc.CreateResponse{
-		Id: userID,
-	}, nil
-}
-
-// Get part
-func (s *server) Get(ctx context.Context, req *desc.GetRequest) (*desc.GetResponse, error) {
-	user, err := s.authService.Get(ctx, req.Id)
-	if err != nil {
-		return nil, err
-	}
-
-	return converter.ToUserFromService(user), nil
-}
-
-// Update part
-func (s *server) Update(ctx context.Context, req *desc.UpdateRequest) (*emptypb.Empty, error) {
-	_, err := s.authService.Update(ctx, converter.ToUpdateUserFromDesc(req))
-	if err != nil {
-		return &emptypb.Empty{}, err
-	}
-
-	return &emptypb.Empty{}, nil
-}
-
-// Delete part
-func (s *server) Delete(ctx context.Context, req *desc.DeleteRequest) (*emptypb.Empty, error) {
-	_, err := s.authService.Delete(ctx, req.Id)
-
-	if err != nil {
-		return &emptypb.Empty{}, err
-	}
-	return &emptypb.Empty{}, nil
 }
 
 func main() {
@@ -105,10 +54,13 @@ func main() {
 	}
 	defer pool.Close()
 
+	authRepository := repoAuth.NewRepository(pool)
+	authService := serviceAuth.NewService(authRepository)
+
 	s := grpc.NewServer()
 	reflection.Register(s)
-	authRepository := repoAuth.NewRepository(pool)
-	desc.RegisterAuthV1Server(s, &server{authService: serviceAuth.NewService(authRepository)})
+	desc.RegisterAuthV1Server(s, authAPI.NewImplementation(authService))
+
 	log.Printf("server listening at %v", lis.Addr())
 
 	if err := s.Serve(lis); err != nil {
