@@ -1,4 +1,4 @@
-include .env
+-include .env
 
 # env
 LOCAL_BIN:=$(CURDIR)/bin
@@ -43,7 +43,7 @@ lint:
 install-golangci-lint-deps:
 	GOBIN=$(LOCAL_BIN) go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.53.3
 
-# docker regestry
+# docker registry
 docker-build-and-push:
 	make docker-build
 	docker login -u $(DOCKER_USER) -p $(DOCKER_PASSWORD) $(DOCKER_REGISTRY)

@@ -10,8 +10,8 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
-	"github.com/HpPpL/microservices_course_auth/internal/config"
-	desc "github.com/HpPpL/microservices_course_auth/pkg/auth_v1"
+	"github.com/HpPpL/go-microservices-course-auth-service/internal/config"
+	desc "github.com/HpPpL/go-microservices-course-auth-service/pkg/auth_v1"
 )
 
 // Path to config

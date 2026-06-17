@@ -106,7 +106,7 @@ jobs:
           script: |
             # Hardcoded paths to repo and dir
             REPO_DIR="./auth"
-            REPO_URL="https://github.com/HpPpL/microservices_course_auth"
+            REPO_URL="https://github.com/HpPpL/go-microservices-course-auth-service"
             
             if [ -d "$REPO_DIR" ]; then
               echo "Repository exists. Pulling latest changes..."

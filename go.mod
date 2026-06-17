@@ -1,4 +1,4 @@
-module github.com/HpPpL/microservices_course_auth
+module github.com/HpPpL/go-microservices-course-auth-service
 
 go 1.21
 

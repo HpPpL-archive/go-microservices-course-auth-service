@@ -1,2 +1,33 @@
-.idea
+# Environment and secrets
+.env
+.env.*
+*.env
+!.env.example
+prod.env
+
+# Build outputs
 /bin/
+bin/
+build/
+dist/
+*.out
+*.test
+coverage.out
+
+# Go workspace/cache artifacts
+vendor/
+
+# Docker/local volumes
+postgres-data/
+.tmp/
+tmp/
+
+# IDE/editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
