@@ -1,5 +1,7 @@
 #!/bin/bash
-source .env
+if [ -f .env ]; then
+  source .env
+fi
 
 export MIGRATION_DSN="host=pg port=5432 dbname=$PG_DATABASE_NAME user=$PG_USER password=$PG_PASSWORD sslmode=disable"
 

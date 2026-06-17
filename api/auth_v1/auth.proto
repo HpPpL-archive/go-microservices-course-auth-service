@@ -6,7 +6,7 @@ import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/wrappers.proto";
 
-option go_package = "github.com/HpPpL/microservices_course_auth/pkg/auth_v1;auth_v1";
+option go_package = "github.com/HpPpL/go-microservices-course-auth-service/pkg/auth_v1;auth_v1";
 
 service AuthV1 {
   rpc Create(CreateRequest) returns (CreateResponse);
@@ -15,14 +15,14 @@ service AuthV1 {
   rpc Delete(DeleteRequest) returns (google.protobuf.Empty);
 }
 
-// Роли
+// Roles
 enum Role{
   ROLE_UNSPECIFIED = 0;
   ROLE_USER = 1;
   ROLE_ADMIN = 2;
 }
 
-// Общие message
+// Shared messages
 message UserDataInfo{
   string name = 1;
   string email = 2;

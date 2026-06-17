@@ -23,7 +23,7 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// Роли
+// Roles
 type Role int32
 
 const (
@@ -73,7 +73,7 @@ func (Role) EnumDescriptor() ([]byte, []int) {
 	return file_auth_proto_rawDescGZIP(), []int{0}
 }
 
-// Общие message
+// Shared messages
 type UserDataInfo struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
